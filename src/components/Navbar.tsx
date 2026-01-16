@@ -5,11 +5,15 @@ import { Button } from "@/components/ui/button";
 import { useShop } from "@/context/ShopContext";
 import { CATEGORIES } from "@/data/categories";
 
+import { useAuth } from "@/context/AuthContext";
+import { User as UserIcon, LogOut } from "lucide-react";
+
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   const { cartCount } = useShop();
+  const { user, logout } = useAuth();
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -43,7 +47,7 @@ const Navbar = () => {
           : "bg-transparent py-4"
       }`}
     >
-      <div className="w-full px-4 lg:px-12">
+      <div className="w-full px-4 sm:px-6 lg:px-12 w-full">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
@@ -78,9 +82,31 @@ const Navbar = () => {
             <button className="p-2 text-muted-foreground hover:text-primary transition-colors">
               <Search size={22} />
             </button>
-            <button className="p-2 text-muted-foreground hover:text-red-500 transition-colors hidden md:block">
-              <Heart size={22} />
-            </button>
+
+            {/* Auth Button */}
+            <div className="hidden md:block">
+              {user ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium hidden xl:block">
+                    Hi, {user.name.split(" ")[0]}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={logout}
+                    title="Logout"
+                  >
+                    <LogOut size={20} />
+                  </Button>
+                </div>
+              ) : (
+                <Link to="/login">
+                  <Button variant="ghost" size="icon" title="Login">
+                    <UserIcon size={22} />
+                  </Button>
+                </Link>
+              )}
+            </div>
 
             {/* Cart */}
             <Link to="/cart">
@@ -122,7 +148,25 @@ const Navbar = () => {
                 </Link>
               ))}
               <div className="flex gap-2 mt-4 pt-4 border-t">
-                <Button className="w-full">Sign In</Button>
+                {user ? (
+                  <Button
+                    className="w-full"
+                    onClick={() => {
+                      logout();
+                      setIsOpen(false);
+                    }}
+                  >
+                    Logout
+                  </Button>
+                ) : (
+                  <Link
+                    to="/login"
+                    className="w-full"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <Button className="w-full">Sign In</Button>
+                  </Link>
+                )}
               </div>
             </div>
           </div>

@@ -18,13 +18,13 @@ const Index = () => {
   const newArrivals = products.filter((p) => p.isNew).slice(0, 8);
 
   return (
-    <div className="min-h-screen bg-background pt-16">
+    <div className="min-h-screen bg-background pt-16 w-full overflow-x-hidden">
       {/* Hero Section */}
-      <section className="relative h-[80vh] min-h-[600px] flex items-center overflow-hidden bg-muted/20">
+      <section className="relative h-[80vh] min-h-[600px] flex items-center overflow-hidden bg-muted/20 w-full">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1547891654-e66ed7ebb968?auto=format&fit=crop&q=80&w=2000')] bg-cover bg-center opacity-100" />
         <div className="absolute inset-0 bg-black/40" /> {/* Dark overlay */}
-        <div className="relative w-full max-w-7xl mx-auto px-4 lg:px-12 z-10">
-          <div className="max-w-2xl space-y-6 animate-fade-in-up">
+        <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 z-10 text-center md:text-left">
+          <div className="max-w-2xl space-y-6 animate-fade-in-up mx-auto md:mx-0">
             <span className="inline-block px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white font-semibold text-sm tracking-wide">
               New Collection 2026
             </span>
@@ -32,14 +32,17 @@ const Index = () => {
               Carry Your World <br />
               <span className="text-primary-foreground">In Style.</span>
             </h1>
-            <p className="text-lg text-white/80 max-w-lg leading-relaxed">
+            <p className="text-lg text-white/80 max-w-lg leading-relaxed mx-auto md:mx-0">
               Discover our premium range of handcrafted bags for travel, work,
               and every adventure in between. Designed for durability, styled
               for you.
             </p>
-            <div className="flex gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-4 pt-4 justify-center md:justify-start">
               <Link to="/products">
-                <Button size="lg" className="rounded-full px-8 text-base h-12">
+                <Button
+                  size="lg"
+                  className="rounded-full px-8 text-base h-12 w-full sm:w-auto"
+                >
                   Shop Now <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
               </Link>
@@ -47,7 +50,7 @@ const Index = () => {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="rounded-full px-8 text-base h-12 bg-white/10 text-white border-white/20 hover:bg-white/20 hover:text-white backdrop-blur-sm"
+                  className="rounded-full px-8 text-base h-12 bg-white/10 text-white border-white/20 hover:bg-white/20 hover:text-white backdrop-blur-sm w-full sm:w-auto"
                 >
                   View Collections
                 </Button>
@@ -58,8 +61,8 @@ const Index = () => {
       </section>
 
       {/* Features Banner */}
-      <div className="bg-primary text-primary-foreground py-8">
-        <div className="max-w-7xl mx-auto px-4 lg:px-12 grid grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="bg-primary text-primary-foreground py-8 w-full">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {[
             {
               icon: ShoppingBag,
@@ -82,7 +85,10 @@ const Index = () => {
               desc: "30-day risk-free returns",
             },
           ].map((feature, i) => (
-            <div key={i} className="flex items-center gap-4">
+            <div
+              key={i}
+              className="flex items-center gap-4 justify-center sm:justify-start"
+            >
               <div className="p-3 bg-primary-foreground/10 rounded-full">
                 <feature.icon size={24} />
               </div>
@@ -98,8 +104,8 @@ const Index = () => {
       </div>
 
       {/* Browse Categories */}
-      <section className="py-20 bg-background">
-        <div className="max-w-7xl mx-auto px-4 lg:px-12">
+      <section className="py-20 bg-background w-full">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="flex justify-between items-end mb-12">
             <div>
               <h2 className="font-display text-3xl font-bold mb-2">
@@ -142,8 +148,8 @@ const Index = () => {
       </section>
 
       {/* Best Sellers */}
-      <section className="py-20 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4 lg:px-12">
+      <section className="py-20 bg-muted/30 w-full">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <span className="text-primary font-semibold text-sm uppercase tracking-wider">
               Top Rated
@@ -166,11 +172,11 @@ const Index = () => {
       </section>
 
       {/* Promo Section */}
-      <section className="py-24 relative overflow-hidden">
+      <section className="py-24 relative overflow-hidden w-full">
         <div className="absolute inset-0 bg-zinc-900" />
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&q=80&w=2000')] bg-cover bg-fixed opacity-30" />
 
-        <div className="relative max-w-7xl mx-auto px-4 lg:px-12 flex flex-col md:flex-row items-center justify-between gap-12">
+        <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 flex flex-col md:flex-row items-center justify-between gap-12 text-center md:text-left">
           <div className="md:w-1/2 space-y-6 text-white">
             <h2 className="font-display text-4xl md:text-5xl font-bold leading-tight">
               Ready for your next <br />{" "}
@@ -192,8 +198,8 @@ const Index = () => {
       </section>
 
       {/* New Arrivals Grid */}
-      <section className="py-20 bg-background">
-        <div className="max-w-7xl mx-auto px-4 lg:px-12">
+      <section className="py-20 bg-background w-full">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <h2 className="font-display text-3xl font-bold mb-12">
             New Arrivals
           </h2>
@@ -204,7 +210,11 @@ const Index = () => {
           </div>
           <div className="mt-16 text-center">
             <Link to="/products">
-              <Button variant="outline" size="lg" className="px-12">
+              <Button
+                variant="outline"
+                size="lg"
+                className="px-12 rounded-full"
+              >
                 View All Products
               </Button>
             </Link>

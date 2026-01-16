@@ -89,8 +89,8 @@ const ProductDetail = () => {
   };
 
   return (
-    <div className="min-h-screen pt-24 pb-16 bg-background">
-      <div className="w-full max-w-7xl mx-auto px-4 lg:px-12">
+    <div className="min-h-screen pt-24 pb-16 bg-background w-full">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 w-full">
         {/* Breadcrumb */}
         <div className="flex items-center text-sm text-muted-foreground mb-8">
           <Link to="/" className="hover:text-foreground">

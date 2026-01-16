@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { Product, CartItem, VariantOption } from "@/types";
 import { PRODUCTS } from "@/data/mockData";
 import { toast } from "sonner";
@@ -22,7 +28,15 @@ const ShopContext = createContext<ShopContextType | undefined>(undefined);
 
 export const ShopProvider = ({ children }: { children: ReactNode }) => {
   const [products] = useState<Product[]>(PRODUCTS);
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    const savedCart = localStorage.getItem("cart");
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cart));
+  }, [cart]);
 
   // Generate a unique key for cart items based on product ID and selected variants
   const getVariantKey = (
