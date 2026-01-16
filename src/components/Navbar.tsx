@@ -1,106 +1,128 @@
 import { Link, useLocation } from "react-router-dom";
-import { useState } from "react";
-import { Menu, X, Camera } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Menu, X, ShoppingBag, Search, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useShop } from "@/context/ShopContext";
+import { CATEGORIES } from "@/data/categories";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
+  const { cartCount } = useShop();
 
   const navLinks = [
     { name: "Home", path: "/" },
-    { name: "Products", path: "/products" },
-    { name: "About Us", path: "/about" },
-    { name: "Contact", path: "/contact" },
+    { name: "Shop All", path: "/products" },
+    ...CATEGORIES.slice(0, 3).map((c) => ({
+      name: c.name,
+      path: `/products?category=${c.id}`,
+    })),
   ];
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => {
+    if (path === "/" && location.pathname === "/") return true;
+    if (path !== "/" && location.pathname.startsWith(path.split("?")[0]))
+      return true; // Simple check
+    return false;
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/40">
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled
+          ? "bg-background/95 backdrop-blur-md shadow-sm py-2"
+          : "bg-transparent py-4"
+      }`}
+    >
       <div className="w-full px-4 lg:px-12">
-        <div className="flex items-center justify-between h-16 lg:h-20">
+        <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center">
-            <span className="font-display text-xl lg:text-2xl font-bold text-primary tracking-wide uppercase">
-              Arun Bag
+          <Link to="/" className="flex items-center gap-2 group">
+            <div className="w-10 h-10 bg-primary rounded-tr-xl rounded-bl-xl flex items-center justify-center text-primary-foreground font-bold text-xl group-hover:rotate-12 transition-transform">
+              A
+            </div>
+            <span className="font-display text-2xl font-bold tracking-tight">
+              Arun<span className="text-primary">Bag</span>
             </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-2">
-            {navLinks.map((link, index) => (
-              <div key={link.path} className="flex items-center">
-                <Link
-                  to={link.path}
-                  className={`font-body text-sm tracking-wide transition-colors duration-300 px-3 py-2 ${
-                    isActive(link.path)
-                      ? "text-primary font-medium"
-                      : "text-muted-foreground hover:text-primary"
-                  }`}
-                >
-                  {link.name}
-                </Link>
-                {index < navLinks.length - 1 && (
-                  <span className="text-muted-foreground/50">/</span>
-                )}
-              </div>
+          <div className="hidden lg:flex items-center gap-1">
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                to={link.path}
+                className={`font-body text-sm font-medium px-4 py-2 rounded-full transition-all ${
+                  isActive(link.path)
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`}
+              >
+                {link.name}
+              </Link>
             ))}
           </div>
 
-          {/* Right Side - Sign In & Camera */}
-          <div className="hidden md:flex items-center gap-6">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-primary hover:text-secondary font-body text-sm font-semibold transition-all px-0"
+          {/* Right Side Icons */}
+          <div className="flex items-center gap-2 md:gap-4">
+            {/* Search (Mock) */}
+            <button className="p-2 text-muted-foreground hover:text-primary transition-colors">
+              <Search size={22} />
+            </button>
+            <button className="p-2 text-muted-foreground hover:text-red-500 transition-colors hidden md:block">
+              <Heart size={22} />
+            </button>
+
+            {/* Cart */}
+            <Link to="/cart">
+              <Button
+                variant="ghost"
+                className="relative p-2 hover:bg-transparent"
+              >
+                <ShoppingBag size={24} className="text-foreground" />
+                {cartCount > 0 && (
+                  <span className="absolute top-1 right-0 w-5 h-5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-background">
+                    {cartCount}
+                  </span>
+                )}
+              </Button>
+            </Link>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="lg:hidden p-2 text-foreground"
             >
-              Sign In
-            </Button>
-            <button className="relative p-2 rounded-full bg-primary text-primary-foreground hover:bg-secondary hover:text-primary transition-all duration-300 shadow-md hover:shadow-lg">
-              <Camera size={20} />
+              {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 text-primary"
-            aria-label="Toggle menu"
-          >
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
         </div>
 
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="md:hidden py-4 border-t border-border animate-fade-in">
-            <div className="flex flex-col gap-2">
+          <div className="lg:hidden absolute top-full left-0 right-0 bg-background border-b border-border animate-fade-in shadow-xl">
+            <div className="flex flex-col p-4 gap-2">
               {navLinks.map((link) => (
                 <Link
-                  key={link.path}
+                  key={link.name}
                   to={link.path}
                   onClick={() => setIsOpen(false)}
-                  className={`font-body text-base py-3 px-2 transition-colors duration-300 ${
-                    isActive(link.path)
-                      ? "text-primary font-medium"
-                      : "text-muted-foreground"
-                  }`}
+                  className="px-4 py-3 hover:bg-muted rounded-md text-sm font-medium"
                 >
                   {link.name}
                 </Link>
               ))}
-              <div className="flex items-center gap-3 mt-4 pt-4 border-t border-border">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-primary text-primary font-body"
-                >
-                  Sign In
-                </Button>
-                <button className="p-2 rounded-full bg-primary text-primary-foreground">
-                  <Camera size={18} />
-                </button>
+              <div className="flex gap-2 mt-4 pt-4 border-t">
+                <Button className="w-full">Sign In</Button>
               </div>
             </div>
           </div>
