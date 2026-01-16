@@ -43,7 +43,7 @@ const Navbar = () => {
           : "bg-transparent py-4"
       }`}
     >
-      <div className="w-full px-4 lg:px-12">
+      <div className="w-full px-4 sm:px-6 lg:px-12">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">

@@ -58,8 +58,8 @@ const Products = () => {
   );
 
   return (
-    <div className="min-h-screen pt-24 pb-16 bg-background">
-      <div className="w-full max-w-7xl mx-auto px-4 lg:px-12">
+    <div className="min-h-screen pt-24 pb-16 bg-background w-full">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
           <div>
