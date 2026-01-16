@@ -1,152 +1,138 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import {
-  Minus,
-  Plus,
-  Heart,
-  ShoppingBag,
-  ArrowLeft,
-  Check,
-} from "lucide-react";
+import { useShop } from "@/context/ShopContext";
 import { Button } from "@/components/ui/button";
-import bag1 from "@/assets/bag-1.jpg";
-import bag2 from "@/assets/bag-2.jpg";
-import bag3 from "@/assets/bag-3.jpg";
-import bag4 from "@/assets/bag-4.jpg";
-import bag5 from "@/assets/bag-5.jpg";
-import bag6 from "@/assets/bag-6.jpg";
+import {
+  ShoppingBag,
+  Star,
+  ShieldCheck,
+  Truck,
+  RefreshCw,
+  ChevronRight,
+} from "lucide-react";
+import VariantSelector from "@/components/products/VariantSelector";
+import ProductCard from "@/components/ProductCard";
 
 const ProductDetail = () => {
-  const { id } = useParams();
-  const [quantity, setQuantity] = useState(1);
-  const [selectedImage, setSelectedImage] = useState(0);
+  const { id } = useParams<{ id: string }>();
+  const { products, addToCart } = useShop();
+  const [activeTab, setActiveTab] = useState<"desc" | "specs" | "reviews">(
+    "desc"
+  );
 
-  const products: Record<
-    string,
-    {
-      name: string;
-      price: number;
-      images: string[];
-      category: string;
-      description: string;
-      material: string;
-      dimensions: string;
-      finishing: string;
+  const product = products.find((p) => p.id === id);
+  const relatedProducts = product
+    ? products
+        .filter(
+          (p) =>
+            p.category.some((c) => product.category.includes(c)) &&
+            p.id !== product.id
+        )
+        .slice(0, 4)
+    : [];
+
+  // State for Variants
+  const [selectedVariants, setSelectedVariants] = useState<
+    Record<string, string>
+  >({});
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Initialize variants
+  useEffect(() => {
+    if (product?.variants) {
+      const defaults: Record<string, string> = {};
+      product.variants.forEach((v) => {
+        defaults[v.name] = v.options[0].id;
+      });
+      setSelectedVariants(defaults);
     }
-  > = {
-    "1": {
-      name: "Classic Tote",
-      price: 895,
-      images: [bag1, bag2, bag3],
-      category: "Tote",
-      description:
-        "A timeless tote bag crafted from the finest Italian calfskin leather. Perfect for the modern professional who values both style and functionality.",
-      material: "Premium Italian Calfskin Leather",
-      dimensions: "35cm x 28cm x 14cm",
-      finishing: "Gold-plated hardware, suede interior lining",
-    },
-    "2": {
-      name: "Noir Crossbody",
-      price: 645,
-      images: [bag2, bag1, bag4],
-      category: "Crossbody",
-      description:
-        "An elegant crossbody bag with a sophisticated chain strap. Ideal for evening occasions or daily elegance.",
-      material: "Smooth Italian Nappa Leather",
-      dimensions: "22cm x 15cm x 8cm",
-      finishing: "Gold chain strap, signature clasp",
-    },
-    "3": {
-      name: "Olive Satchel",
-      price: 1250,
-      images: [bag3, bag5, bag1],
-      category: "Satchel",
-      description:
-        "A structured satchel in rich olive green, featuring our signature hardware and spacious interior.",
-      material: "Full-grain Italian Leather",
-      dimensions: "32cm x 25cm x 12cm",
-      finishing: "Brass hardware, cotton twill lining",
-    },
-    "4": {
-      name: "Bordeaux Kelly",
-      price: 2100,
-      images: [bag4, bag2, bag6],
-      category: "Handbag",
-      description:
-        "Our flagship heritage piece, the Bordeaux Kelly combines classic silhouette with modern craftsmanship.",
-      material: "Box Calf Italian Leather",
-      dimensions: "28cm x 22cm x 10cm",
-      finishing: "Palladium hardware, lambskin lining",
-    },
-    "5": {
-      name: "Camel Bucket",
-      price: 785,
-      images: [bag5, bag1, bag3],
-      category: "Bucket",
-      description:
-        "A relaxed bucket bag in warm camel, perfect for effortless everyday style.",
-      material: "Soft Italian Calfskin",
-      dimensions: "26cm x 30cm x 18cm",
-      finishing: "Gold drawstring tips, suede interior",
-    },
-    "6": {
-      name: "Navy Clutch",
-      price: 495,
-      images: [bag6, bag4, bag2],
-      category: "Clutch",
-      description:
-        "A sophisticated evening clutch in deep navy, designed to complement your most elegant occasions.",
-      material: "Italian Nappa Leather",
-      dimensions: "28cm x 16cm x 4cm",
-      finishing: "Gold zip, satin lining",
-    },
-  };
+  }, [product]);
 
-  const product = products[id || "1"] || products["1"];
-
-  const features = [
-    "Handcrafted in Italy",
-    "Lifetime warranty",
-    "Free shipping worldwide",
-    "Complimentary gift wrapping",
-  ];
-
-  return (
-    <div className="min-h-screen pt-20 bg-background">
-      <div className="w-full px-4 lg:px-12 py-12">
-        {/* Breadcrumb */}
+  if (!product) {
+    return (
+      <div className="min-h-screen pt-32 text-center">
+        <h2 className="text-2xl font-bold">Product not found</h2>
         <Link
           to="/products"
-          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground font-body text-sm mb-8 transition-colors duration-300"
+          className="text-primary hover:underline mt-4 inline-block"
         >
-          <ArrowLeft size={16} />
-          Back to Products
+          Back to Shop
         </Link>
+      </div>
+    );
+  }
 
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
-          {/* Product Images */}
+  // Calculate Price
+  let finalPrice = product.basePrice;
+  if (product.variants) {
+    Object.entries(selectedVariants).forEach(([variantName, valId]) => {
+      const vType = product.variants?.find((v) => v.name === variantName);
+      const option = vType?.options.find((o) => o.id === valId);
+      if (option?.priceModifier) finalPrice += option.priceModifier;
+    });
+  }
+
+  const handleVariantSelect = (name: string, id: string) => {
+    setSelectedVariants((prev) => ({ ...prev, [name]: id }));
+
+    // Update image if color variant has a specific image
+    if (name === "Color") {
+      const vType = product.variants?.find((v) => v.name === "Color");
+      const option = vType?.options.find((o) => o.id === id);
+      if (option?.image) {
+        // In a real app we might switch the main gallery.
+        // Here we just keep using the main images array but could potentially swap index 0 if we had per-variant images logic fully mapped.
+        // For now, let's just toast or do nothing visually except the dot selection,
+        // as the mock data `image` on variant option is sometimes same as main product images.
+      }
+    }
+  };
+
+  return (
+    <div className="min-h-screen pt-24 pb-16 bg-background">
+      <div className="w-full max-w-7xl mx-auto px-4 lg:px-12">
+        {/* Breadcrumb */}
+        <div className="flex items-center text-sm text-muted-foreground mb-8">
+          <Link to="/" className="hover:text-foreground">
+            Home
+          </Link>
+          <ChevronRight size={14} className="mx-2" />
+          <Link to="/products" className="hover:text-foreground">
+            Shop
+          </Link>
+          <ChevronRight size={14} className="mx-2" />
+          <span className="text-foreground font-medium">{product.name}</span>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-12 lg:gap-16">
+          {/* Gallery */}
           <div className="space-y-4">
-            <div className="aspect-square rounded-2xl overflow-hidden bg-muted">
+            <div className="aspect-[4/5] bg-muted rounded-xl overflow-hidden relative">
               <img
-                src={product.images[selectedImage]}
+                src={product.images[currentImageIndex]}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
+              {product.isNew && (
+                <span className="absolute top-4 left-4 bg-primary text-primary-foreground text-xs font-bold px-3 py-1.5 rounded-sm uppercase tracking-wider">
+                  New Arrival
+                </span>
+              )}
             </div>
-            <div className="flex gap-4">
-              {product.images.map((img, index) => (
+            <div className="flex gap-4 overflow-x-auto pb-2">
+              {product.images.map((img, idx) => (
                 <button
-                  key={index}
-                  onClick={() => setSelectedImage(index)}
-                  className={`w-24 h-24 rounded-lg overflow-hidden transition-all duration-300 ${
-                    selectedImage === index
-                      ? "ring-2 ring-secondary ring-offset-2"
-                      : "opacity-70 hover:opacity-100"
+                  key={idx}
+                  onClick={() => setCurrentImageIndex(idx)}
+                  className={`relative w-24 aspect-square rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${
+                    currentImageIndex === idx
+                      ? "border-primary"
+                      : "border-transparent"
                   }`}
                 >
                   <img
                     src={img}
-                    alt={`${product.name} view ${index + 1}`}
+                    alt=""
                     className="w-full h-full object-cover"
                   />
                 </button>
@@ -154,97 +140,202 @@ const ProductDetail = () => {
             </div>
           </div>
 
-          {/* Product Info */}
-          <div className="space-y-8">
-            <div>
-              <span className="inline-block px-3 py-1 rounded-full bg-secondary/10 text-secondary font-body text-xs uppercase tracking-wider mb-4">
-                {product.category}
-              </span>
-              <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4">
+          {/* Details */}
+          <div>
+            <div className="mb-6">
+              <h3 className="text-lg font-medium text-primary mb-1">
+                {product.brand}
+              </h3>
+              <h1 className="font-display text-4xl font-bold text-foreground mb-2">
                 {product.name}
               </h1>
-              <p className="font-display text-3xl font-semibold text-secondary">
-                ${product.price.toLocaleString()}
+              <div className="flex items-center gap-4 mb-4">
+                <span className="text-3xl font-bold text-foreground">
+                  ${finalPrice}
+                </span>
+                {product.basePrice !== finalPrice && (
+                  <span className="text-lg text-muted-foreground line-through decoration-red-500/50">
+                    Base: ${product.basePrice}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-1 mb-6">
+                <Star className="fill-yellow-400 text-yellow-400 w-4 h-4" />
+                <span className="font-medium">{product.rating}</span>
+                <span className="text-muted-foreground mx-1">•</span>
+                <span className="text-muted-foreground underline cursor-pointer">
+                  {product.reviews} reviews
+                </span>
+              </div>
+              <p className="text-muted-foreground leading-relaxed">
+                {product.description}
               </p>
             </div>
 
-            <p className="font-body text-muted-foreground leading-relaxed">
-              {product.description}
-            </p>
+            <div className="h-px bg-border my-8" />
 
-            <div className="space-y-4 py-6 border-y border-border">
-              <div className="flex justify-between">
-                <span className="font-body text-sm text-muted-foreground">
-                  Material
-                </span>
-                <span className="font-body text-sm text-foreground">
-                  {product.material}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-body text-sm text-muted-foreground">
-                  Dimensions
-                </span>
-                <span className="font-body text-sm text-foreground">
-                  {product.dimensions}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-body text-sm text-muted-foreground">
-                  Finishing
-                </span>
-                <span className="font-body text-sm text-foreground">
-                  {product.finishing}
-                </span>
-              </div>
-            </div>
+            {/* Variants */}
+            {product.variants && (
+              <VariantSelector
+                variants={product.variants}
+                selectedVariants={selectedVariants}
+                onSelect={handleVariantSelect}
+              />
+            )}
 
-            {/* Quantity Selector */}
-            <div className="flex items-center gap-6">
-              <span className="font-body text-sm text-foreground">
-                Quantity
-              </span>
-              <div className="flex items-center gap-4 border border-border rounded-lg p-1">
-                <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-10 h-10 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <Minus size={16} />
-                </button>
-                <span className="w-12 text-center font-body font-medium text-foreground">
-                  {quantity}
-                </span>
-                <button
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="w-10 h-10 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <Plus size={16} />
-                </button>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex gap-4">
-              <Button variant="hero" size="xl" className="flex-1">
-                <ShoppingBag size={20} />
-                Add to Cart
+            {/* Actions */}
+            <div className="mt-8 flex gap-4">
+              <Button
+                size="lg"
+                className="flex-1 h-14 text-base rounded-full"
+                onClick={() => addToCart(product, selectedVariants)}
+              >
+                <ShoppingBag className="mr-2" /> Add to Cart - ${finalPrice}
               </Button>
-              <Button variant="outline" size="xl" className="px-6">
-                <Heart size={20} />
+              <Button
+                size="icon"
+                variant="outline"
+                className="h-14 w-14 rounded-full"
+              >
+                <Star className="w-5 h-5" />
               </Button>
             </div>
 
-            {/* Features */}
-            <div className="space-y-3 pt-4">
-              {features.map((feature, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <Check size={16} className="text-olive" />
-                  <span className="font-body text-sm text-muted-foreground">
-                    {feature}
-                  </span>
+            {/* Trust Badges */}
+            <div className="grid grid-cols-3 gap-4 mt-8 pt-8 border-t border-border">
+              <div className="text-center">
+                <Truck className="mx-auto text-primary mb-2" />
+                <span className="text-xs font-medium">Free Shipping</span>
+              </div>
+              <div className="text-center">
+                <ShieldCheck className="mx-auto text-primary mb-2" />
+                <span className="text-xs font-medium">2 Year Warranty</span>
+              </div>
+              <div className="text-center">
+                <RefreshCw className="mx-auto text-primary mb-2" />
+                <span className="text-xs font-medium">30 Day Returns</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Tabs Section */}
+        <div className="mt-24">
+          <div className="flex border-b border-border mb-8">
+            {["desc", "specs", "reviews"].map((t) => (
+              <button
+                key={t}
+                onClick={() => setActiveTab(t as any)}
+                className={`px-8 py-4 text-sm font-medium uppercase tracking-wider border-b-2 transition-colors ${
+                  activeTab === t
+                    ? "border-primary text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {t === "desc"
+                  ? "Description"
+                  : t === "specs"
+                  ? "Specifications"
+                  : "Reviews"}
+              </button>
+            ))}
+          </div>
+
+          <div className="min-h-[200px] animate-fade-in">
+            {activeTab === "desc" && (
+              <div className="max-w-3xl space-y-4 text-muted-foreground leading-relaxed">
+                <p>{product.description}</p>
+                <p>
+                  Detailed craftsmanship meets modern functionality. This bag is
+                  designed to accompany you on any journey, whether it's the
+                  daily commute or an international adventure.
+                </p>
+              </div>
+            )}
+            {activeTab === "specs" && (
+              <div className="grid md:grid-cols-2 gap-8 max-w-4xl">
+                <div>
+                  <h4 className="font-bold mb-4">Features</h4>
+                  <ul className="space-y-2">
+                    {product.features?.map((f, i) => (
+                      <li
+                        key={i}
+                        className="flex items-center gap-2 text-sm text-muted-foreground"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary" />{" "}
+                        {f}
+                      </li>
+                    )) || <p>No specific features listed.</p>}
+                  </ul>
                 </div>
-              ))}
-            </div>
+                <div>
+                  <h4 className="font-bold mb-4">Materials & Care</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Premium materials sourced responsibly. Wipe clean with a
+                    damp cloth. Do not machine wash.
+                  </p>
+                </div>
+              </div>
+            )}
+            {activeTab === "reviews" && (
+              <div className="max-w-3xl">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="text-5xl font-bold text-foreground">
+                    {product.rating}
+                  </div>
+                  <div>
+                    <div className="flex text-yellow-500 mb-1">
+                      <Star className="fill-current" />
+                      <Star className="fill-current" />
+                      <Star className="fill-current" />
+                      <Star className="fill-current" />
+                      <Star className="fill-current opacity-50" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Based on {product.reviews} reviews
+                    </p>
+                  </div>
+                  <Button variant="outline" className="ml-auto">
+                    Write a Review
+                  </Button>
+                </div>
+                <div className="space-y-6">
+                  {[1, 2].map((i) => (
+                    <div key={i} className="border-b border-border pb-6">
+                      <div className="flex justify-between mb-2">
+                        <span className="font-bold">Happy Customer</span>
+                        <span className="text-xs text-muted-foreground">
+                          2 days ago
+                        </span>
+                      </div>
+                      <div className="flex text-yellow-500 w-20 mb-2">
+                        <Star className="fill-current w-3 h-3" />
+                        <Star className="fill-current w-3 h-3" />
+                        <Star className="fill-current w-3 h-3" />
+                        <Star className="fill-current w-3 h-3" />
+                        <Star className="fill-current w-3 h-3" />
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Absolutely love this bag! The quality is outstanding and
+                        it fits everything I need.
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Related Products */}
+        <div className="mt-24 border-t border-border pt-16">
+          <h2 className="font-display text-3xl font-bold mb-12">
+            You Might Also Like
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {relatedProducts.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
           </div>
         </div>
       </div>
